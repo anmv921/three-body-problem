@@ -1,0 +1,1 @@
+ffmpeg -framerate 30 -start_number 0 -i imagens\%04d.jpg -vcodec libx264 video.mp4
