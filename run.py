@@ -6,7 +6,9 @@ Created on Sun Aug 14 12:05:02 2022
 """
 
 from main import main
-from Plots import generate_video
+from generate_video import generate_video
+from plots import read_data, plot_energy
 
 main()
 generate_video()
+plot_energy()

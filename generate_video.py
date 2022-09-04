@@ -9,7 +9,7 @@ plt.rcParams["xtick.direction"] = "in"
 plt.rcParams["ytick.direction"] = "in"
 plt.rcParams["xtick.top"] = "true"
 plt.rcParams["ytick.right"] = "true"
-
+plt.rcParams["lines.markerfacecolor"] = 'none'
 
 
 def clear_folder(inFolder):
@@ -66,7 +66,10 @@ def generate_video():
         
         ax.view_init(30, 50)
         
+        plt.title("t="+str(t[i]))
+        
         plt.savefig(imagepath)
+        
         plt.close(fig)
     # endfor
 
@@ -79,9 +82,11 @@ def generate_video():
     # -hide_banner
     os.system(r"ffmpeg -loglevel error -framerate 30 -start_number 0 -i imagens\%04d.jpg -vcodec libx264 video.mp4")
 
-    print("video gerado.")
+    print("video gerado")
 
     end = time.time()
     print(end - start)
 
 # end
+
+generate_video()
