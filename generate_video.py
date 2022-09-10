@@ -22,7 +22,7 @@ def clear_folder(inFolder):
 
 def generate_video():
     
-    print("a gerar o vídeo...")
+    print("A gerar o vídeo...")
 
     start = time.time()
     
@@ -82,7 +82,7 @@ def generate_video():
     # -hide_banner
     os.system(r"ffmpeg -loglevel error -framerate 30 -start_number 0 -i imagens\%04d.jpg -vcodec libx264 video.mp4")
 
-    print("video gerado")
+    print("Video gerado")
 
     end = time.time()
     print(end - start)

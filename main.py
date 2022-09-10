@@ -5,11 +5,14 @@ import os
 import time
 import pandas as pd
 import sys
+import json
+
 plt.style.use("seaborn-bright")
 plt.rcParams["xtick.direction"] = "in"
 plt.rcParams["ytick.direction"] = "in"
 plt.rcParams["xtick.top"] = "true"
 plt.rcParams["ytick.right"] = "true"
+
 np.random.seed(43567362)
 
 
@@ -18,18 +21,23 @@ def init():
     global m1, m2, m3, N, r1, r2, r3, maxSteps, dt, v1, v2, v3, t,\
         sampleStep, start, end, E, H, tMax, U, K
     start = time.time()
-    m1 = 1
-    m2 = 1
-    m3 = 1
     
-    if len(sys.argv)>1 and sys.argv[1] != "":
-        tMax = float(sys.argv[1])
-    else:
-        tMax = 0.01
+    with open("config.json", "r") as read_file:
+        config = json.load(read_file)
+    # end
     
-    sampleStep = 100
+    m1 = config["m1"]
+    m2 = config["m2"]
+    m3 = config["m3"]
     
-    dt = 0.00001
+    #if len(sys.argv)>1 and sys.argv[1] != "":
+    #    tMax = float(sys.argv[1])
+    
+    tMax = config["tMax"]
+    
+    sampleStep = config["sampleStep"]
+    
+    dt = config["dt"]
     
     maxSteps = int(np.ceil(tMax / dt))
     
@@ -51,9 +59,9 @@ def init():
     r2[0] = np.array([1, 0, 0])
     r3[0] = np.array([0.5, np.sqrt(3)/2, 0])
     
-    v1[0] = np.array([0, 0, 0])
-    v2[0] = np.array([0, 0, 0])
-    v3[0] = np.array([0, 0, 0])
+    v1[0] = np.asarray(config["v10"])
+    v2[0] = np.asarray(config["v20"])
+    v3[0] = np.asarray(config["v30"])
     
     
     H[0] = hamiltonian()
@@ -136,13 +144,13 @@ def sample():
 def main():
     init()
     step = 0
-    print("Running the main loop...")
+    print("A correr o ciclo principal...")
     while step < maxSteps-1: # whyyyyy
         #print(step)
         singleStep(step)
         step += 1
     # endwhile
-    print("Main loop ended")
+    print("Fim do ciclo principal")
     endProcess()
 # end
 
