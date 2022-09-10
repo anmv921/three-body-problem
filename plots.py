@@ -49,5 +49,3 @@ def plot_energy():
     plt.legend()
     plt.show()
 # end
-    
-plot_energy()

@@ -11,7 +11,6 @@ plt.rcParams["xtick.top"] = "true"
 plt.rcParams["ytick.right"] = "true"
 plt.rcParams["lines.markerfacecolor"] = 'none'
 
-
 def clear_folder(inFolder):
     files = os.listdir(inFolder)
     for fileName in files:
@@ -45,7 +44,6 @@ def generate_video():
     
     clear_folder(folder)
     for i, _ in enumerate(t):
-        
         imagepath = os.path.join(folder, str(i).zfill(4) + ".jpg")
         
         fig = plt.figure(figsize=(10, 10))
@@ -79,14 +77,12 @@ def generate_video():
     # endif
 
     # make video
-    # -hide_banner
-    os.system(r"ffmpeg -loglevel error -framerate 30 -start_number 0 -i imagens\%04d.jpg -vcodec libx264 video.mp4")
+    strFfmpegCommand = \
+    r"ffmpeg -loglevel error -framerate 30 -start_number 0 -i imagens\%04d.jpg -vcodec libx264 video.mp4"
+    os.system(strFfmpegCommand)
 
     print("Video gerado")
 
     end = time.time()
     print(end - start)
-
 # end
-
-generate_video()
