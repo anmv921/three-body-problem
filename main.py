@@ -6,6 +6,7 @@ import time
 import pandas as pd
 import sys
 import json
+from datetime import datetime
 
 plt.style.use("seaborn-bright")
 plt.rcParams["xtick.direction"] = "in"
@@ -17,6 +18,8 @@ np.random.seed(43567362)
 
 def init():
     print("A inicializar o processo...")
+    now = datetime.now()
+    print(now.strftime("%d%m%Y_%H%M%S"))
     #global m1, m2, m3, N, r1, r2, r3, maxSteps, dt, v1, v2, v3, t,\
     #    sampleStep, start, end, E, H, tMax, U, K
     start = time.time()
@@ -68,6 +71,7 @@ def init():
         R1, R2, R3, V1, V2, V3, start
 # end
 
+
 def hamiltonian(m1, m2, m3, r1, r2, r3):
     """
     @In m1, m2, m3
@@ -75,6 +79,7 @@ def hamiltonian(m1, m2, m3, r1, r2, r3):
     """
     return -m1*m2/norm(r1 - r2) - m2*m3/norm(r3 - r2) - m3*m1/norm(r3 - r1)
 
+@njit
 def rand_vec(A, B):
     """
     Devolve um vetor de 3 elementos
@@ -83,6 +88,7 @@ def rand_vec(A, B):
     return np.random.random(3) * (B - A) + A
 # end
 
+@njit
 def norm(v):
     """
     Norma de um vetor
@@ -90,10 +96,12 @@ def norm(v):
     return np.sqrt(np.sum(v*v))
 # end
     
+@njit
 def fij(mi, mj, ri, rj):
     return - mi*mj * (ri - rj) / norm(ri - rj)**3
 # end
 
+@njit
 def force(r1, r2, r3, m1, m2, m3):
     """
     @In R1(t), R2(t), R3(t)
@@ -105,14 +113,14 @@ def force(r1, r2, r3, m1, m2, m3):
     return f1, f2, f3
 # end
     
-
-def integrate(F1, F2, F3, v1, v2, v3, r1, r2, r3, dt):
-    r1Next, v1Next = leapfrog(F1, v1, r1, dt)
-    r2Next, v2Next = leapfrog(F2, v2, r2, dt)
-    r3Next, v3Next = leapfrog(F3, v3, r3, dt)
+def integrate(f1, f2, f3, v1, v2, v3, r1, r2, r3, dt):
+    r1Next, v1Next = leapfrog(f1, v1, r1, dt)
+    r2Next, v2Next = leapfrog(f2, v2, r2, dt)
+    r3Next, v3Next = leapfrog(f3, v3, r3, dt)
     return r1Next, r2Next, r3Next, v1Next, v2Next, v3Next
 # end
     
+@njit
 def leapfrog(F, v, r, dt):
     """
     @In r(0), v(-h/2)
@@ -126,6 +134,7 @@ def leapfrog(F, v, r, dt):
     return rNext, vNext
 # end
     
+
 def singleStep(m1, m2, m3, r1, r2, r3, v1, v2, v3, dt):
     """
     @Out h = H(t)
@@ -176,6 +185,7 @@ def calculate_velocity(pos, dt):
     return vel
 # end
 
+@njit
 def sumSqr(vec):
     return np.sum(vec*vec)
 # end
@@ -194,9 +204,11 @@ def ecin(R1, R2, R3, maxSteps, m1, m2, m3, dt):
     # endfor
     return ec
 # end
-        
-
+     
 def main():
+    """
+    Simulação do problema de 3 corpos em 3d
+    """
     m1, m2, m3, tMax, sampleStep, dt, maxSteps, \
         t, H, K, U, R1, R2, R3, V1, V2, V3, start = init()
     step = 0
@@ -214,7 +226,6 @@ def main():
                m1, m2, m3, maxSteps, dt)
 # end            
         
-
 if __name__ == "__main__":
     main()
 # endif
