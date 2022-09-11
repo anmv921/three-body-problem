@@ -12,7 +12,8 @@ import os
 import time
 import pandas as pd
 import seaborn as sns
-#sns.set_palette("husl", 10)
+
+
 plt.style.use("seaborn-bright")
 plt.rcParams["xtick.direction"] = "in"
 plt.rcParams["ytick.direction"] = "in"
@@ -41,11 +42,19 @@ def read_data():
 
 def plot_energy():
     t, H, K, U = read_data()
-    plt.plot(t[1:], H[1:], ".", label="H", mfc="C0", alpha=0.5,
-             ms=10)
-    plt.plot(t[1:], K[1:], "s", label="K", ms=10)
-    plt.plot(t[1:], U[1:], "o", label="U", ms=12)
+    
+    #plt.plot(t[1:], H[1:], "D", label="H", ms=10)
+    #plt.plot(t[1:], K[1:], "s", label="K", ms=10)
+    #plt.plot(t[1:], U[1:], "o", label="U", ms=10)
+    
+    plt.scatter(t[1:], H[1:], label="H", alpha=0.5)
+    plt.scatter(t[1:], K[1:], label="K", alpha=0.5)
+    plt.scatter(t[1:], U[1:], label="U", alpha=0.5)
+    
     plt.xlabel("t")
     plt.legend()
+    plt.tight_layout()
+    plt.margins(x=0.01, y=0.1)
+    plt.savefig("E.png")
     plt.show()
 # end

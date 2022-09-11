@@ -54,16 +54,16 @@ def init():
     V2 = np.zeros([maxSteps, 3])
     V3 = np.zeros([maxSteps, 3])
     
-    R1[0] = np.array([0, 0, 0])
-    R2[0] = np.array([1, 0, 0])
-    R3[0] = np.array([0.5, np.sqrt(3)/2, 0])
+    R1[0] = np.asarray(config["r10"])
+    R2[0] = np.asarray(config["r20"])
+    R3[0] = np.asarray(config["r30"])
     
     V1[0] = np.asarray(config["v10"])
     V2[0] = np.asarray(config["v20"])
     V3[0] = np.asarray(config["v30"])
     
     
-    H[0] = hamiltonian()
+    H[0] = hamiltonian(m1, m2, m3, R1[0], R2[0], R3[0])
     return m1, m2, m3, tMax, sampleStep, dt, maxSteps, t, H, K, U, \
         R1, R2, R3, V1, V2, V3, start
 # end
@@ -126,19 +126,21 @@ def leapfrog(F, v, r, dt):
     return rNext, vNext
 # end
     
-def singleStep(m1, m2, m3, r1, r2, r3):
+def singleStep(m1, m2, m3, r1, r2, r3, v1, v2, v3, dt):
     """
     @Out h = H(t)
     """
     h = hamiltonian(m1, m2, m3, r1, r2, r3)
     f1, f2, f3 = force(r1, r2, r3, m1, m2, m3)
-    r1Next, r2Next, r3Next, v1Next, v2Next, v3Next = integrate(f1, f2, f3)
+    r1Next, r2Next, r3Next, v1Next, v2Next, v3Next = \
+        integrate(f1, f2, f3, v1, v2, v3, r1, r2, r3, dt)
     return h, r1Next, r2Next, r3Next, v1Next, v2Next, v3Next
 # end
     
-def endProcess(U, H, K, start):
+def endProcess(U, H, K, start, t, R1, R2, R3, \
+               sampleStep, m1, m2, m3, maxSteps, dt):
     np.copyto(U, H)
-    np.copyto(K, ecin()) # !
+    np.copyto(K, ecin(R1, R2, R3, maxSteps, m1, m2, m3, dt)) # !
     H[1:-1] += K
     sample(t, R1, R2, R3, H, U, K, sampleStep)
     print("Fim do processo.")
@@ -178,11 +180,11 @@ def sumSqr(vec):
     return np.sum(vec*vec)
 # end
 
-def ecin(R1, R2, R3, maxSteps, m1, m2, m3):
+def ecin(R1, R2, R3, maxSteps, m1, m2, m3, dt):
     # todo test
-    vel1 = calculate_velocity(R1)
-    vel2 = calculate_velocity(R2)
-    vel3 = calculate_velocity(R3)
+    vel1 = calculate_velocity(R1, dt)
+    vel2 = calculate_velocity(R2, dt)
+    vel3 = calculate_velocity(R3, dt)
     
     ec = np.empty(maxSteps-2) 
     
@@ -203,11 +205,13 @@ def main():
         # print(step)
         H[step], R1[step+1], R2[step+1], R3[step+1], \
             V1[step+1], V2[step+1], V3[step+1] = \
-            singleStep(m1, m2, m3, R1[step], R2[step], R3[step])
+            singleStep(m1, m2, m3, R1[step], R2[step], R3[step], \
+                       V1[step], V2[step], V3[step], dt)
         step += 1
     # endwhile
     print("Fim do ciclo principal")
-    endProcess(U, H, K, start)
+    endProcess(U, H, K, start, t, R1, R2, R3, sampleStep, \
+               m1, m2, m3, maxSteps, dt)
 # end            
         
 
