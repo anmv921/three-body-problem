@@ -16,10 +16,14 @@ plt.rcParams["ytick.right"] = "true"
 
 np.random.seed(43567362)
 
+# TODO move data to Desktop/ThreeBodyData/current time
+# copy config to the same folder
+# TODO restricted problem
+
 def init():
     print("A inicializar o processo...")
     now = datetime.now()
-    print(now.strftime("%d%m%Y_%H%M%S"))
+    print(now.strftime("%d-%m-%Y_%H-%M-%S"))
     #global m1, m2, m3, N, r1, r2, r3, maxSteps, dt, v1, v2, v3, t,\
     #    sampleStep, start, end, E, H, tMax, U, K
     start = time.time()
@@ -27,6 +31,8 @@ def init():
     with open("config.json", "r") as read_file:
         config = json.load(read_file)
     # end
+    
+    dim = 2
     
     m1 = config["m1"]
     m2 = config["m2"]
@@ -49,13 +55,13 @@ def init():
     U = np.zeros(maxSteps)
     K = np.zeros(maxSteps-2)
     
-    R1 = np.zeros([maxSteps, 3])
-    R2 = np.zeros([maxSteps, 3])
-    R3 = np.zeros([maxSteps, 3])
+    R1 = np.zeros([maxSteps, dim])
+    R2 = np.zeros([maxSteps, dim])
+    R3 = np.zeros([maxSteps, dim])
     
-    V1 = np.zeros([maxSteps, 3])
-    V2 = np.zeros([maxSteps, 3])
-    V3 = np.zeros([maxSteps, 3])
+    V1 = np.zeros([maxSteps, dim])
+    V2 = np.zeros([maxSteps, dim])
+    V3 = np.zeros([maxSteps, dim])
     
     R1[0] = np.asarray(config["r10"])
     R2[0] = np.asarray(config["r20"])
@@ -68,7 +74,7 @@ def init():
     
     H[0] = hamiltonian(m1, m2, m3, R1[0], R2[0], R3[0])
     return m1, m2, m3, tMax, sampleStep, dt, maxSteps, t, H, K, U, \
-        R1, R2, R3, V1, V2, V3, start
+        R1, R2, R3, V1, V2, V3, start, dim
 # end
 
 
@@ -80,12 +86,12 @@ def hamiltonian(m1, m2, m3, r1, r2, r3):
     return -m1*m2/norm(r1 - r2) - m2*m3/norm(r3 - r2) - m3*m1/norm(r3 - r1)
 
 @njit
-def rand_vec(A, B):
+def rand_vec(A, B, dim):
     """
     Devolve um vetor de 3 elementos
     com números aleatórios uniformes entre A e B
     """
-    return np.random.random(3) * (B - A) + A
+    return np.random.random(dim) * (B - A) + A
 # end
 
 @njit
@@ -162,13 +168,10 @@ def sample(t, R1, R2, R3, H, U, K, sampleStep):
         't': t[::sampleStep],
         'x1': R1[:,0][::sampleStep], \
         'y1': R1[:,1][::sampleStep], \
-        'z1': R1[:,2][::sampleStep], \
         'x2': R2[:,0][::sampleStep], \
         'y2': R2[:,1][::sampleStep], \
-        'z2': R2[:,2][::sampleStep], \
         'x3': R3[:,0][::sampleStep], \
         'y3': R3[:,1][::sampleStep], \
-        'z3': R3[:,2][::sampleStep], \
         'H' : H[::sampleStep], \
         'U' : U[::sampleStep], \
         'K' : K[::sampleStep]
@@ -210,7 +213,7 @@ def main():
     Simulação do problema de 3 corpos em 3d
     """
     m1, m2, m3, tMax, sampleStep, dt, maxSteps, \
-        t, H, K, U, R1, R2, R3, V1, V2, V3, start = init()
+        t, H, K, U, R1, R2, R3, V1, V2, V3, start, dim = init()
     step = 0
     print("A correr o ciclo principal...")
     while step < maxSteps-1: # whyyyyy

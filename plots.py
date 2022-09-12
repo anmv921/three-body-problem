@@ -23,7 +23,7 @@ plt.rcParams["ytick.right"] = "true"
 plt.rcParams["lines.markerfacecolor"] = 'none'
 
 def plot_energy():
-    t, H, K, U, x1, y1, z1, x2, y2, z2, x3, y3, z3 = read_data()
+    t, H, K, U, x1, y1, x2, y2, x3, y3 = read_data()
     
     plt.plot(t[1:], H[1:], "D", label="H", ms=5, alpha=1)
     plt.plot(t[1:], K[1:], "s", label="K", ms=5, alpha=1)
@@ -33,6 +33,6 @@ def plot_energy():
     plt.legend()
     plt.tight_layout()
     plt.margins(x=0.01, y=0.1)
-    plt.savefig("E.png")
+    plt.savefig("E.pdf")
     plt.show()
 # end

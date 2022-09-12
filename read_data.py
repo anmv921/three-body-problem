@@ -12,15 +12,12 @@ def read_data():
     t = df["t"].values
     x1 = df["x1"].values
     y1 = df["y1"].values
-    z1 = df["z1"].values
     x2 = df["x2"].values
     y2 = df["y2"].values
-    z2 = df["z2"].values
     x3 = df["x3"].values
     y3 = df["y3"].values
-    z3 = df["z3"].values
     H = df["H"].values
     K = df["K"].values
     U = df["U"].values
-    return t, H, K, U, x1, y1, z1, x2, y2, z2, x3, y3, z3
+    return t, H, K, U, x1, y1, x2, y2, x3, y3
 # end

@@ -29,7 +29,7 @@ def generate_video():
 
     start = time.time()
     
-    t, H, K, U, x1, y1, z1, x2, y2, z2, x3, y3, z3 = read_data()
+    t, H, K, U, x1, y1, x2, y2, x3, y3 = read_data()
 
     folder = "imagens"
     if not os.path.exists(folder):
@@ -41,24 +41,21 @@ def generate_video():
         imagepath = os.path.join(folder, str(i).zfill(4) + ".jpg")
         
         fig = plt.figure(figsize=(10, 10))
-        ax = fig.add_subplot(projection='3d')
+        ax = plt.gca()
         
-        plt.plot(x1[:i+1], y1[:i+1], z1[:i+1], c="C0")
-        ax.scatter(x1[i], y1[i], z1[i], c="C0")
+        plt.plot(x1[:i+1], y1[:i+1], c="C0")
+        ax.scatter(x1[i], y1[i], c="C0")
         
-        plt.plot(x2[:i+1], y2[:i+1], z2[:i+1], c="C1")
-        ax.scatter(x2[i], y2[i], z2[i], c="C1")
+        plt.plot(x2[:i+1], y2[:i+1], c="C1")
+        ax.scatter(x2[i], y2[i], c="C1")
         
-        plt.plot(x3[:i+1], y3[:i+1], z3[:i+1], c="C2")
-        ax.scatter(x3[i], y3[i], z3[i], c="C2")
+        plt.plot(x3[:i+1], y3[:i+1], c="C2")
+        ax.scatter(x3[i], y3[i], c="C2")
         
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
         
-        ax.view_init(30, 50)
-        
-        plt.title("t="+str(t[i]))
+        plt.title(f't={t[i]:.4f}')
         
         plt.savefig(imagepath)
         
