@@ -7,12 +7,8 @@ import pandas as pd
 import sys
 import json
 from datetime import datetime
-
-plt.style.use("seaborn-bright")
-plt.rcParams["xtick.direction"] = "in"
-plt.rcParams["ytick.direction"] = "in"
-plt.rcParams["xtick.top"] = "true"
-plt.rcParams["ytick.right"] = "true"
+from generate_video import generate_video
+from plots import read_data, plot_energy, plot_trajectory
 
 np.random.seed(43567362)
 
@@ -22,15 +18,19 @@ np.random.seed(43567362)
 
 def init():
     print("A inicializar o processo...")
-    now = datetime.now()
-    print(now.strftime("%d-%m-%Y_%H-%M-%S"))
-    #global m1, m2, m3, N, r1, r2, r3, maxSteps, dt, v1, v2, v3, t,\
-    #    sampleStep, start, end, E, H, tMax, U, K
+    
     start = time.time()
     
     with open("config.json", "r") as read_file:
         config = json.load(read_file)
     # end
+    
+    dtmNow = datetime.now()
+    strNow = dtmNow.strftime("%d-%m-%Y_%H-%M-%S")
+    strFullDataPath = os.path.join(config["datapath"], strNow)
+    os.mkdir(strFullDataPath)
+    imageFolder = os.path.join(strFullDataPath, "imagens")
+    os.mkdir(imageFolder)
     
     dim = 2
     
@@ -71,19 +71,28 @@ def init():
     V2[0] = np.asarray(config["v20"])
     V3[0] = np.asarray(config["v30"])
     
+    eps = config["eps"]
     
-    H[0] = hamiltonian(m1, m2, m3, R1[0], R2[0], R3[0])
+    
+    H[0] = hamiltonian(m1, m2, m3, R1[0], R2[0], R3[0], eps)
     return m1, m2, m3, tMax, sampleStep, dt, maxSteps, t, H, K, U, \
-        R1, R2, R3, V1, V2, V3, start, dim
+        R1, R2, R3, V1, V2, V3, start, dim, strFullDataPath, eps, imageFolder
 # end
 
 
-def hamiltonian(m1, m2, m3, r1, r2, r3):
+def hamiltonian(m1, m2, m3, r1, r2, r3, eps):
     """
     @In m1, m2, m3
     @In R1(t), R2(t), R3(3)
     """
-    return -m1*m2/norm(r1 - r2) - m2*m3/norm(r3 - r2) - m3*m1/norm(r3 - r1)
+    
+    nr12 = norm(r1 - r2)
+    nr32 = norm(r3 - r2)
+    nr31 = norm(r3 - r1)
+    
+    #return -m1*m2/norm(r1 - r2) - m2*m3/norm(r3 - r2) - m3*m1/norm(r3 - r1)
+    return -m1*m2/np.sqrt(nr12*nr12 + eps*eps) - m2*m3/np.sqrt(nr32*nr32 + eps*eps) - m3*m1/np.sqrt(nr31*nr31 + eps*eps)
+#end
 
 @njit
 def rand_vec(A, B, dim):
@@ -103,19 +112,22 @@ def norm(v):
 # end
     
 @njit
-def fij(mi, mj, ri, rj):
-    return - mi*mj * (ri - rj) / norm(ri - rj)**3
+def fij(mi, mj, ri, rj, eps):
+    #eps = 0.1
+    #return - mi*mj * (ri - rj) / norm(ri - rj)**3
+    nr = norm(ri - rj)
+    return - mi*mj * (ri - rj) / (( nr*nr  + eps*eps)**(3/2))
 # end
 
 @njit
-def force(r1, r2, r3, m1, m2, m3):
+def force(r1, r2, r3, m1, m2, m3, eps):
     """
     @In R1(t), R2(t), R3(t)
     @Out F1(t) = (F1x, F1y, F1z)(t), F2, F3
     """
-    f1 = fij(m1, m2, r1, r2) + fij(m1, m2, r1, r2)
-    f2 = fij(m2, m3, r2, r3) + fij(m2, m1, r2, r1)
-    f3 = fij(m3, m1, r3, r1) + fij(m3, m2, r3, r2)
+    f1 = fij(m1, m2, r1, r2, eps) + fij(m1, m2, r1, r2, eps)
+    f2 = fij(m2, m3, r2, r3, eps) + fij(m2, m1, r2, r1, eps)
+    f3 = fij(m3, m1, r3, r1, eps) + fij(m3, m2, r3, r2, eps)
     return f1, f2, f3
 # end
     
@@ -127,7 +139,7 @@ def integrate(f1, f2, f3, v1, v2, v3, r1, r2, r3, dt):
 # end
     
 @njit
-def leapfrog(F, v, r, dt):
+def leapfrog(F, vLeap, r, dt):
     """
     @In r(0), v(-h/2)
     @Out r(t), v(h/2)
@@ -135,18 +147,18 @@ def leapfrog(F, v, r, dt):
     """
     #v[i+1] = v[i] + F * dt
     #r[i+1] = r[i] + dt*v[i+1] # r(0) -> r(h)
-    vNext = v + F*dt
+    vNext = vLeap + F*dt
     rNext = r + dt*vNext
     return rNext, vNext
 # end
     
 
-def singleStep(m1, m2, m3, r1, r2, r3, v1, v2, v3, dt):
+def singleStep(m1, m2, m3, r1, r2, r3, v1, v2, v3, dt, eps):
     """
     @Out h = H(t)
     """
-    h = hamiltonian(m1, m2, m3, r1, r2, r3)
-    f1, f2, f3 = force(r1, r2, r3, m1, m2, m3)
+    h = hamiltonian(m1, m2, m3, r1, r2, r3, eps)
+    f1, f2, f3 = force(r1, r2, r3, m1, m2, m3, eps)
     r1Next, r2Next, r3Next, v1Next, v2Next, v3Next = \
         integrate(f1, f2, f3, v1, v2, v3, r1, r2, r3, dt)
     return h, r1Next, r2Next, r3Next, v1Next, v2Next, v3Next
@@ -213,7 +225,8 @@ def main():
     Simulação do problema de 3 corpos em 3d
     """
     m1, m2, m3, tMax, sampleStep, dt, maxSteps, \
-        t, H, K, U, R1, R2, R3, V1, V2, V3, start, dim = init()
+        t, H, K, U, R1, R2, R3, V1, V2, V3, start, dim, \
+            datapath, eps, imageFolder = init()
     step = 0
     print("A correr o ciclo principal...")
     while step < maxSteps-1: # whyyyyy
@@ -221,12 +234,15 @@ def main():
         H[step], R1[step+1], R2[step+1], R3[step+1], \
             V1[step+1], V2[step+1], V3[step+1] = \
             singleStep(m1, m2, m3, R1[step], R2[step], R3[step], \
-                       V1[step], V2[step], V3[step], dt)
+                       V1[step], V2[step], V3[step], dt, eps)
         step += 1
     # endwhile
     print("Fim do ciclo principal")
     endProcess(U, H, K, start, t, R1, R2, R3, sampleStep, \
                m1, m2, m3, maxSteps, dt)
+    plot_energy()
+    plot_trajectory()
+    #generate_video(imageFolder)
 # end            
         
 if __name__ == "__main__":

@@ -10,9 +10,9 @@ from read_data import read_data
 plt.style.use("seaborn-bright")
 plt.rcParams["xtick.direction"] = "in"
 plt.rcParams["ytick.direction"] = "in"
-plt.rcParams["xtick.top"] = "true"
-plt.rcParams["ytick.right"] = "true"
-plt.rcParams["lines.markerfacecolor"] = 'none'
+plt.rcParams["xtick.top"] = "false"
+plt.rcParams["ytick.right"] = "false"
+#plt.rcParams["lines.markerfacecolor"] = 'none'
 
 
 def clear_folder(inFolder):
@@ -23,7 +23,7 @@ def clear_folder(inFolder):
     # endfor
 # end
 
-def generate_video():
+def generate_video(folder):
     
     print("A gerar o vídeo...")
 
@@ -31,7 +31,7 @@ def generate_video():
     
     t, H, K, U, x1, y1, x2, y2, x3, y3 = read_data()
 
-    folder = "imagens"
+    #folder = "imagens"
     if not os.path.exists(folder):
         os.makedirs(folder)
     # endif
@@ -66,10 +66,13 @@ def generate_video():
     if os.path.exists(nome_vid):
         os.remove(nome_vid)
     # endif
-
+    
+    
     # make video
+    #r"ffmpeg -loglevel error -framerate 30 -start_number 0 -i imagens\%04d.jpg -vcodec libx264 video.mp4"
     strFfmpegCommand = \
-    r"ffmpeg -loglevel error -framerate 30 -start_number 0 -i imagens\%04d.jpg -vcodec libx264 video.mp4"
+    r"ffmpeg -loglevel error -framerate 30 -start_number 0 -i " + \
+        folder + r"\%04d.jpg -vcodec libx264 video.mp4"
     os.system(strFfmpegCommand)
 
     print("Video gerado")

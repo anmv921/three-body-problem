@@ -10,5 +10,4 @@ from generate_video import generate_video
 from plots import read_data, plot_energy
 
 main()
-generate_video()
-plot_energy()
+ 
