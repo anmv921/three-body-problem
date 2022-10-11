@@ -6,8 +6,9 @@ Created on Sun Aug 14 12:05:02 2022
 """
 
 from main import main
-from generate_video import generate_video
+from video import generate_video
 from plots import read_data, plot_energy
 
-main()
+main(in_boolVideo=True)
+
  

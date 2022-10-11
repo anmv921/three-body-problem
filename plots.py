@@ -24,14 +24,10 @@ plt.rcParams["lines.markerfacecolor"] = 'none'
 
 def plot_energy():
     t, H, K, U, x1, y1, x2, y2, x3, y3 = read_data()
-    
-    #plt.plot(t[1:], H[1:], "D", label="H", ms=5, alpha=1)
-    #plt.plot(t[1:], K[1:], "s", label="K", ms=5, alpha=1)
-    #plt.plot(t[1:], U[1:], "o", label="U", ms=5, alpha=1)
-    
-    plt.plot(t[1:], H[1:], "-o", label="H", ms=5, alpha=0.5)
-    plt.plot(t[1:], K[1:], "-o", label="K", ms=5, alpha=0.5)
-    plt.plot(t[1:], U[1:], "-o", label="U", ms=5, alpha=0.5)
+        
+    plt.plot(t[1:], H[1:], ".", label="H")
+    plt.plot(t[1:], K[1:], ".", label="K")
+    plt.plot(t[1:], U[1:], ".", label="U")
     
     plt.xlabel("t")
     plt.legend()
@@ -43,9 +39,9 @@ def plot_energy():
 
 def plot_trajectory():
     t, H, K, U, x1, y1, x2, y2, x3, y3 = read_data()
-    plt.plot(x1, y1)
-    plt.plot(x2, y2)
-    plt.plot(x3, y3)
-    plt.savefig("trajectory.png", dpi=1000)
+    plt.plot(x1, y1,  ".", ls="")
+    plt.plot(x2, y2, ".", ls="")
+    plt.plot(x3, y3, ".", ls="")
+    plt.savefig("path.png", dpi=1000)
     plt.show()
 # end

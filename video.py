@@ -12,7 +12,7 @@ plt.rcParams["xtick.direction"] = "in"
 plt.rcParams["ytick.direction"] = "in"
 plt.rcParams["xtick.top"] = "false"
 plt.rcParams["ytick.right"] = "false"
-#plt.rcParams["lines.markerfacecolor"] = 'none'
+plt.rcParams["lines.markerfacecolor"] = 'none'
 
 
 def clear_folder(inFolder):
@@ -43,13 +43,14 @@ def generate_video(folder):
         fig = plt.figure(figsize=(10, 10))
         ax = plt.gca()
         
-        plt.plot(x1[:i+1], y1[:i+1], c="C0")
+        vmin = max(i - 50, 0)
+        plt.plot(x1[vmin:i+1], y1[vmin:i+1], c="C0")
         ax.scatter(x1[i], y1[i], c="C0")
         
-        plt.plot(x2[:i+1], y2[:i+1], c="C1")
+        plt.plot(x2[vmin:i+1], y2[vmin:i+1], c="C1")
         ax.scatter(x2[i], y2[i], c="C1")
         
-        plt.plot(x3[:i+1], y3[:i+1], c="C2")
+        plt.plot(x3[vmin:i+1], y3[vmin:i+1], c="C2")
         ax.scatter(x3[i], y3[i], c="C2")
         
         ax.set_xlabel('X')
@@ -80,3 +81,5 @@ def generate_video(folder):
     end = time.time()
     print(end - start)
 # end
+
+#generate_video("C:\\Users\\andriy\\Desktop\\ThreeBodyProblem\\data\\11-10-2022_00-36-45\\imagens\\")

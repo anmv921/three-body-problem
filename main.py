@@ -7,7 +7,7 @@ import pandas as pd
 import sys
 import json
 from datetime import datetime
-from generate_video import generate_video
+from video import generate_video
 from plots import read_data, plot_energy, plot_trajectory
 
 np.random.seed(43567362)
@@ -55,28 +55,49 @@ def init():
     U = np.zeros(maxSteps)
     K = np.zeros(maxSteps-2)
     
-    R1 = np.zeros([maxSteps, dim])
-    R2 = np.zeros([maxSteps, dim])
-    R3 = np.zeros([maxSteps, dim])
+    N = 3
     
-    V1 = np.zeros([maxSteps, dim])
-    V2 = np.zeros([maxSteps, dim])
-    V3 = np.zeros([maxSteps, dim])
+    R = []
+    V = []
     
-    R1[0] = np.asarray(config["r10"])
-    R2[0] = np.asarray(config["r20"])
-    R3[0] = np.asarray(config["r30"])
+    for n in range(N):
+        R.append(np.zeros([maxSteps, dim]))
+        V.append(np.zeros([maxSteps, dim]))
+    # endfor
     
-    V1[0] = np.asarray(config["v10"])
-    V2[0] = np.asarray(config["v20"])
-    V3[0] = np.asarray(config["v30"])
+    R[0][0] = np.asarray(config["r10"])
+    R[1][0] = np.asarray(config["r20"])
+    R[2][0] = np.asarray(config["r30"])
+    
+    V[0][0] = np.asarray(config["v10"])
+    V[1][0] = np.asarray(config["v20"])
     
     eps = config["eps"]
     
+    r12 = norm(R[0][0] - R[1][0])
     
-    H[0] = hamiltonian(m1, m2, m3, R1[0], R2[0], R3[0], eps)
+    rcm = (m1 * R[0][0] + m2 * R[1][0])/(m1 + m2)
+    
+    rho1 = norm(R[0][0] - rcm)
+    rho2 = norm(R[1][0] - rcm)
+    
+    V[0][0][1] = np.sqrt(m2 * (rho1) / r12**2)
+    #np.sqrt(m2 * r12 * r12 / (r12*r12 + eps*eps)*(3/2) )
+    V[1][0][1] = -np.sqrt(m1 * (rho2) / r12**2)
+    #-np.sqrt(m1 * r12 * r12 / (r12*r12 + eps*eps)*(3/2))
+    
+    
+    
+    
+    V[2][0] = np.asarray(config["v30"])
+    
+    
+    
+    
+    H[0] = hamiltonian(m1, m2, m3, R[0][0], R[1][0], R[2][0], eps)
     return m1, m2, m3, tMax, sampleStep, dt, maxSteps, t, H, K, U, \
-        R1, R2, R3, V1, V2, V3, start, dim, strFullDataPath, eps, imageFolder
+        R[0], R[1], R[2], V[0], V[1], V[2], start,\
+            dim, strFullDataPath, eps, imageFolder
 # end
 
 
@@ -104,7 +125,7 @@ def rand_vec(A, B, dim):
 # end
 
 @njit
-def norm(v):
+def norm(v  ):
     """
     Norma de um vetor
     """
@@ -125,7 +146,7 @@ def force(r1, r2, r3, m1, m2, m3, eps):
     @In R1(t), R2(t), R3(t)
     @Out F1(t) = (F1x, F1y, F1z)(t), F2, F3
     """
-    f1 = fij(m1, m2, r1, r2, eps) + fij(m1, m2, r1, r2, eps)
+    f1 = fij(m1, m2, r1, r2, eps) + fij(m1, m3, r1, r3, eps)
     f2 = fij(m2, m3, r2, r3, eps) + fij(m2, m1, r2, r1, eps)
     f3 = fij(m3, m1, r3, r1, eps) + fij(m3, m2, r3, r2, eps)
     return f1, f2, f3
@@ -220,7 +241,7 @@ def ecin(R1, R2, R3, maxSteps, m1, m2, m3, dt):
     return ec
 # end
      
-def main():
+def main(in_boolVideo=False):
     """
     Simulação do problema de 3 corpos em 3d
     """
@@ -242,7 +263,8 @@ def main():
                m1, m2, m3, maxSteps, dt)
     plot_energy()
     plot_trajectory()
-    #generate_video(imageFolder)
+    if in_boolVideo: 
+        generate_video(imageFolder)
 # end            
         
 if __name__ == "__main__":
