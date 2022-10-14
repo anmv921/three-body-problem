@@ -4,3 +4,4 @@ tests
 data.dat
 video.mp4
 E.*
+__pycache__
