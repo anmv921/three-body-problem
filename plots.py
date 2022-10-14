@@ -18,8 +18,8 @@ from read_data import read_data
 plt.style.use("seaborn-bright")
 plt.rcParams["xtick.direction"] = "in"
 plt.rcParams["ytick.direction"] = "in"
-plt.rcParams["xtick.top"] = "false"
-plt.rcParams["ytick.right"] = "false"
+plt.rcParams["xtick.top"] = "true"
+plt.rcParams["ytick.right"] = "true"
 plt.rcParams["lines.markerfacecolor"] = 'none'
 
 def plot_energy():
@@ -39,6 +39,7 @@ def plot_energy():
 
 def plot_trajectory():
     t, H, K, U, x1, y1, x2, y2, x3, y3 = read_data()
+    fig = plt.figure(figsize=(7, 7))
     plt.plot(x1, y1,  ".", ls="")
     plt.plot(x2, y2, ".", ls="")
     plt.plot(x3, y3, ".", ls="")

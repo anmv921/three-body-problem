@@ -10,8 +10,8 @@ from read_data import read_data
 plt.style.use("seaborn-bright")
 plt.rcParams["xtick.direction"] = "in"
 plt.rcParams["ytick.direction"] = "in"
-plt.rcParams["xtick.top"] = "false"
-plt.rcParams["ytick.right"] = "false"
+plt.rcParams["xtick.top"] = "true"
+plt.rcParams["ytick.right"] = "true"
 plt.rcParams["lines.markerfacecolor"] = 'none'
 
 

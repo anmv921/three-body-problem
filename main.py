@@ -53,7 +53,7 @@ def init():
     
     H =  np.zeros(maxSteps)
     U = np.zeros(maxSteps)
-    K = np.zeros(maxSteps-2)
+    K = np.zeros(maxSteps)
     
     N = 3
     
@@ -86,13 +86,7 @@ def init():
     V[1][0][1] = -np.sqrt(m1 * (rho2) / r12**2)
     #-np.sqrt(m1 * r12 * r12 / (r12*r12 + eps*eps)*(3/2))
     
-    
-    
-    
     V[2][0] = np.asarray(config["v30"])
-    
-    
-    
     
     H[0] = hamiltonian(m1, m2, m3, R[0][0], R[1][0], R[2][0], eps)
     return m1, m2, m3, tMax, sampleStep, dt, maxSteps, t, H, K, U, \
@@ -106,12 +100,9 @@ def hamiltonian(m1, m2, m3, r1, r2, r3, eps):
     @In m1, m2, m3
     @In R1(t), R2(t), R3(3)
     """
-    
     nr12 = norm(r1 - r2)
     nr32 = norm(r3 - r2)
     nr31 = norm(r3 - r1)
-    
-    #return -m1*m2/norm(r1 - r2) - m2*m3/norm(r3 - r2) - m3*m1/norm(r3 - r1)
     return -m1*m2/np.sqrt(nr12*nr12 + eps*eps) - m2*m3/np.sqrt(nr32*nr32 + eps*eps) - m3*m1/np.sqrt(nr31*nr31 + eps*eps)
 #end
 
@@ -134,18 +125,12 @@ def norm(v  ):
     
 @njit
 def fij(mi, mj, ri, rj, eps):
-    #eps = 0.1
-    #return - mi*mj * (ri - rj) / norm(ri - rj)**3
     nr = norm(ri - rj)
     return - mi*mj * (ri - rj) / (( nr*nr  + eps*eps)**(3/2))
 # end
 
 @njit
 def force(r1, r2, r3, m1, m2, m3, eps):
-    """
-    @In R1(t), R2(t), R3(t)
-    @Out F1(t) = (F1x, F1y, F1z)(t), F2, F3
-    """
     f1 = fij(m1, m2, r1, r2, eps) + fij(m1, m3, r1, r3, eps)
     f2 = fij(m2, m3, r2, r3, eps) + fij(m2, m1, r2, r1, eps)
     f3 = fij(m3, m1, r3, r1, eps) + fij(m3, m2, r3, r2, eps)
@@ -164,10 +149,7 @@ def leapfrog(F, vLeap, r, dt):
     """
     @In r(0), v(-h/2)
     @Out r(t), v(h/2)
-    
     """
-    #v[i+1] = v[i] + F * dt
-    #r[i+1] = r[i] + dt*v[i+1] # r(0) -> r(h)
     vNext = vLeap + F*dt
     rNext = r + dt*vNext
     return rNext, vNext
@@ -175,9 +157,6 @@ def leapfrog(F, vLeap, r, dt):
     
 
 def singleStep(m1, m2, m3, r1, r2, r3, v1, v2, v3, dt, eps):
-    """
-    @Out h = H(t)
-    """
     h = hamiltonian(m1, m2, m3, r1, r2, r3, eps)
     f1, f2, f3 = force(r1, r2, r3, m1, m2, m3, eps)
     r1Next, r2Next, r3Next, v1Next, v2Next, v3Next = \
@@ -189,7 +168,7 @@ def endProcess(U, H, K, start, t, R1, R2, R3, \
                sampleStep, m1, m2, m3, maxSteps, dt):
     np.copyto(U, H)
     np.copyto(K, ecin(R1, R2, R3, maxSteps, m1, m2, m3, dt)) # !
-    H[1:-1] += K
+    H += K
     sample(t, R1, R2, R3, H, U, K, sampleStep)
     print("Fim do processo.")
     end = time.time()
@@ -214,8 +193,12 @@ def sample(t, R1, R2, R3, H, U, K, sampleStep):
 # end
 
 def calculate_velocity(pos, dt):
-    # TODO forward and back differences for 1st and last values
-    vel = \
+    vel = np.zeros(pos.shape)
+    
+    vel[0] = (pos[1] - pos[0]) / dt
+    vel[-1] = (pos[-1] - pos[-2]) / dt
+    
+    vel[1:-2] = \
         np.array([ (pos[i+1]-pos[i-1])/(2*dt) \
                   for i in range(1, len(pos)-2) ])
     return vel
@@ -227,14 +210,13 @@ def sumSqr(vec):
 # end
 
 def ecin(R1, R2, R3, maxSteps, m1, m2, m3, dt):
-    # todo test
     vel1 = calculate_velocity(R1, dt)
     vel2 = calculate_velocity(R2, dt)
     vel3 = calculate_velocity(R3, dt)
     
-    ec = np.empty(maxSteps-2) 
+    ec = np.empty(maxSteps) 
     
-    for j in np.arange(maxSteps-3): # whyyyy
+    for j in np.arange(maxSteps):
         ec[j] = 0.5 * ( m1 * sumSqr(vel1[j]) + m2 * sumSqr(vel2[j]) + \
                      m3 * sumSqr(vel3[j]) )
     # endfor
@@ -250,8 +232,7 @@ def main(in_boolVideo=False):
             datapath, eps, imageFolder = init()
     step = 0
     print("A correr o ciclo principal...")
-    while step < maxSteps-1: # whyyyyy
-        # print(step)
+    while step < maxSteps-1:
         H[step], R1[step+1], R2[step+1], R3[step+1], \
             V1[step+1], V2[step+1], V3[step+1] = \
             singleStep(m1, m2, m3, R1[step], R2[step], R3[step], \

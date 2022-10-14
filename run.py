@@ -9,6 +9,6 @@ from main import main
 from video import generate_video
 from plots import read_data, plot_energy
 
-main(in_boolVideo=True)
+main(in_boolVideo=False)
 
  
