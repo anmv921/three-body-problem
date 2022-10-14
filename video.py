@@ -40,7 +40,7 @@ def generate_video(folder):
     for i, _ in enumerate(t):
         imagepath = os.path.join(folder, str(i).zfill(4) + ".jpg")
         
-        fig = plt.figure(figsize=(10, 10))
+        fig = plt.figure(figsize=(7, 7))
         ax = plt.gca()
         
         vmin = max(i - 50, 0)
