@@ -1,6 +1,6 @@
 # Three Body Problem
 
-> <img src="https://github.com/anmv921/three-body-problem/blob/main/out.gif" width="250" />
+> <img src="https://github.com/anmv921/three-body-problem/blob/main/out.gif" width="300" />
 
 A simulation of three bodies interacting through Newtonian gravity, such as the Sun-Earth-Moon system.
 
